@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תמ"ל/1095/ב – מפת חומר ביסוס</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map"></div>
+
+<aside id="panel" class="panel">
+  <header class="panel-head">
+    <h1 data-i18n="title" dir="rtl"></h1>
+    <div class="head-actions">
+      <button id="langBtn" class="chip" type="button">HE</button>
+      <button id="collapseBtn" class="chip" type="button" aria-label="collapse">–</button>
+    </div>
+  </header>
+
+  <div class="panel-body">
+    <form id="searchForm" class="search" autocomplete="off">
+      <input id="searchInput" type="text" inputmode="numeric" data-i18n-ph="searchPh">
+      <button type="submit" class="btn" data-i18n="find"></button>
+    </form>
+    <div id="searchMsg" class="muted small"></div>
+
+    <section>
+      <h2 data-i18n="legend"></h2>
+      <ul id="legend" class="legend"></ul>
+      <ul class="legend outlines">
+        <li><span class="swatch outline ttg"></span><span data-i18n="ttgOutline"></span></li>
+        <li><span class="swatch outline kas"></span><span data-i18n="kasOutline"></span></li>
+        <li><span class="swatch outline hidden"></span><span data-i18n="hiddenOutline"></span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 data-i18n="display"></h2>
+      <label class="row"><input type="checkbox" id="quickMode"> <span data-i18n="quickMode"></span></label>
+      <label class="row"><input type="checkbox" id="planOnly"> <span data-i18n="planOnly"></span></label>
+      <label class="row"><input type="checkbox" id="peekHidden"> <span data-i18n="peekHidden"></span></label>
+      <label class="row"><input type="checkbox" id="showLabels" checked> <span data-i18n="showLabels"></span></label>
+      <label class="row slider"><span data-i18n="opacity"></span> <input type="range" id="opacity" min="0.1" max="0.9" step="0.05" value="0.55"></label>
+    </section>
+
+    <section>
+      <h2 data-i18n="progress"></h2>
+      <div id="stats" class="stats"></div>
+      <details id="hiddenDetails">
+        <summary data-i18n="hiddenList"></summary>
+        <ul id="hiddenList" class="hidden-list"></ul>
+      </details>
+    </section>
+
+    <section>
+      <h2 data-i18n="saving"></h2>
+      <div id="stateInfo" class="small"></div>
+      <div class="btn-row">
+        <button id="exportBtn" class="btn primary" type="button" data-i18n="export"></button>
+        <label class="btn" for="importInput" data-i18n="import"></label>
+        <input id="importInput" type="file" accept=".json,application/json" hidden>
+        <button id="resetBtn" class="btn danger" type="button" data-i18n="reset"></button>
+      </div>
+      <p id="saveHelp" class="muted small"></p>
+    </section>
+  </div>
+</aside>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/supabase/supabase.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
