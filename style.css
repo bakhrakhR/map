@@ -96,3 +96,16 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: v
 @media (max-width: 600px) {
   .panel { width: calc(100% - 24px); max-height: 55%; }
 }
+
+/* process highlight */
+.procbar {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1001;
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 12px;
+  background: #fff9db; border: 1px solid #fcc419; border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,.15); font-size: 13px; max-width: calc(100% - 700px);
+}
+.procbar[hidden] { display: none; }
+.procbar .btn { padding: 3px 8px; }
+a.proc { color: #1971c2; text-decoration: underline dotted; cursor: pointer; font-weight: 600; }
+a.proc:hover { text-decoration: underline; }
+@media (max-width: 1100px) { .procbar { top: auto; bottom: 40px; max-width: calc(100% - 24px); } }

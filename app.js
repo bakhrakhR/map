@@ -19,7 +19,7 @@
   const I18N = {
     ru: {
       title: 'תמ"ל/1095/ב · חומר ביסוס',
-      searchPh: 'гуш или гуш/חלקה, напр. 3991/41',
+      searchPh: 'гуш, гуш/חלקה или תצ"ר, напр. 3991/41, 955/2002',
       find: 'Найти',
       legend: 'Год חומר ביסוס',
       cat_y2011: '> 2010', cat_y1999: '1999–2010', cat_zero_new: 'הסדר после 2010',
@@ -52,6 +52,9 @@
       notFound: 'Не найдено', foundGush: 'חלקות в гуше',
       imported: 'Загружено', importErr: 'Не удалось прочитать файл',
       showBtn: 'вкл',
+      p_org: 'Исходный',
+      procTitle: 'חלקות процесса', procHint: 'Нажмите на номер תצ"ר / תת"ג в карточке, чтобы подсветить все его חלקות',
+      procClear: 'Снять подсветку', procFit: 'Показать все', procNone: 'На карте нет חלקות этого процесса',
       saveHelpSb: 'Статус сохраняется в Supabase сразу при клике и виден на всех компьютерах. state.json — только резервная копия.',
       srcSb: 'Источник: Supabase', sbOk: 'синхронизировано', sbSending: 'отправка…',
       sbOffline: 'нет связи с Supabase', sbPending: 'ждут отправки', sbLive: 'live',
@@ -59,7 +62,7 @@
     },
     he: {
       title: 'תמ"ל/1095/ב · חומר ביסוס',
-      searchPh: 'גוש או גוש/חלקה, למשל 3991/41',
+      searchPh: 'גוש, גוש/חלקה או תצ"ר, למשל 3991/41, 955/2002',
       find: 'חיפוש',
       legend: 'שנת חומר ביסוס',
       cat_y2011: 'אחרי 2010', cat_y1999: '\u20661999–2010\u2069', cat_zero_new: 'הסדר אחרי 2010',
@@ -92,6 +95,9 @@
       notFound: 'לא נמצא', foundGush: 'חלקות בגוש',
       imported: 'נטען', importErr: 'לא ניתן לקרוא את הקובץ',
       showBtn: 'הדלק',
+      p_org: 'מקורי',
+      procTitle: 'חלקות התהליך', procHint: 'לחצו על מספר תצ"ר / תת"ג בכרטיס כדי להדגיש את כל החלקות שלו',
+      procClear: 'ניקוי הדגשה', procFit: 'הצג הכול', procNone: 'אין במפה חלקות של תהליך זה',
       saveHelpSb: 'הסטטוס נשמר ב-Supabase מיד בלחיצה ונראה בכל המחשבים. state.json – גיבוי בלבד.',
       srcSb: 'מקור: Supabase', sbOk: 'מסונכרן', sbSending: 'שולח…',
       sbOffline: 'אין חיבור ל-Supabase', sbPending: 'ממתינים לשליחה', sbLive: 'live',
@@ -338,28 +344,90 @@
   window.__toggleParcel = toggle; // used by popup button
 
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const PROC_RE = /(?:[A-Za-z]\/)?\d+\/\d{4}/g;
+  function procLinks(text) {
+    return esc(text).replace(PROC_RE, m => PROC.has(m) ? `<a class="proc" data-proc="${m}">${m}</a>` : m);
+  }
   function popupHtml(p) {
-    const row = (k, v) => (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) ? '' : `<tr><td>${esc(t(k))}</td><td>${esc(Array.isArray(v) ? v.join(', ') : v)}</td></tr>`;
+    const has = (v) => !(v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length));
+    const row = (k, v) => has(v) ? `<tr><td>${esc(t(k))}</td><td>${esc(Array.isArray(v) ? v.join(', ') : v)}</td></tr>` : '';
+    const prow = (k, v) => has(v) ? `<tr><td>${esc(t(k))}</td><td>${(Array.isArray(v) ? v : [v]).map(procLinks).join(', ')}</td></tr>` : '';
     const plan = p.pl ? (p.pl === 'בשלמותה' ? t('p_full') : t('p_part')) : t('p_no');
     const hidden = isHidden(p.id);
     return `<div class="pp" dir="${ui.lang === 'he' ? 'rtl' : 'ltr'}">
       <h3>${esc(p.id)}</h3>
       <table>
-        ${row('p_hb', p.lb)}
+        ${prow('p_hb', p.lb)}
         ${row('p_from', t('from_' + p.ch))}
         ${row('p_plan', plan)}
         ${row('p_mith', p.m)}
         ${row('p_area', p.ar)}
-        ${row('p_layer', p.tal)}
-        ${row('p_ttg', p.ttg)}
-        ${row('p_kas', p.kas)}
-        ${row('p_pag', p.pag)}
-        ${row('p_bik', p.bik)}
+        ${prow('p_org', p.o)}
+        ${p.tal !== p.o ? prow('p_layer', p.tal) : ''}
+        ${prow('p_ttg', p.ttg)}
+        ${prow('p_kas', p.kas)}
+        ${prow('p_pag', p.pag)}
+        ${prow('p_bik', p.bik)}
       </table>
       ${p.rep ? `<div class="muted small">${esc(t('fromReport'))}</div>` : ''}
+      <div class="muted small">${esc(t('procHint'))}</div>
       <button class="btn ${hidden ? '' : 'primary'}" onclick="window.__toggleParcel('${esc(p.id)}')">${esc(hidden ? t('show') : t('hide'))}</button>
     </div>`;
   }
+
+  // ---------- process highlight ----------
+  const PROC = new Map(); // process number -> [parcel ids]
+  D.parcels.features.forEach(f => {
+    const p = f.properties;
+    [p.o, p.tal, ...p.ttg, ...p.kas, ...p.pag, ...p.bik].forEach(e => {
+      if (!e || e === '0' || !/\d+\/\d{4}$/.test(e)) return;
+      if (!PROC.has(e)) PROC.set(e, new Set());
+      PROC.get(e).add(p.id);
+    });
+  });
+  let procLayer = null; let procCurrent = null;
+  function procRole(p, num) {
+    const r = [];
+    if (p.o === num || p.tal === num) r.push('origin');
+    if (p.ttg.includes(num)) r.push('ttg');
+    if (p.kas.includes(num)) r.push('kas');
+    if (p.pag.includes(num)) r.push('pag');
+    if (p.bik.includes(num)) r.push('bik');
+    return r;
+  }
+  function clearProc() {
+    if (procLayer) { procLayer.remove(); procLayer = null; }
+    procCurrent = null;
+    document.getElementById('procBar').hidden = true;
+  }
+  function highlightProc(num, fit = true) {
+    clearProc();
+    const ids = PROC.get(num);
+    const bar = document.getElementById('procBar');
+    if (!ids || !ids.size) { bar.hidden = false; bar.querySelector('.txt').textContent = `${num} · ${t('procNone')}`; return false; }
+    const feats = D.parcels.features.filter(f => ids.has(f.properties.id));
+    procLayer = L.geoJSON({ type: 'FeatureCollection', features: feats }, {
+      renderer: canvas, interactive: false,
+      style: f => {
+        const roles = procRole(f.properties, num);
+        const created = roles.includes('origin');
+        return { color: '#ffd43b', weight: 4, opacity: 1, dashArray: created ? null : '8 6', fillColor: '#fff3bf', fillOpacity: 0.35 };
+      },
+    }).addTo(map);
+    procLayer.bringToFront();
+    procCurrent = num;
+    const nOrigin = feats.filter(f => procRole(f.properties, num).includes('origin')).length;
+    bar.hidden = false;
+    bar.querySelector('.txt').innerHTML = `<b>${esc(num)}</b> · ${esc(t('procTitle'))}: <b>${feats.length}</b>` +
+      (nOrigin && nOrigin < feats.length ? ` <span class="muted">(${nOrigin} ${esc(ui.lang === 'he' ? 'נוצרו בו' : 'созданы им')}, ${feats.length - nOrigin} ${esc(ui.lang === 'he' ? 'ביסוס' : 'бисус')})</span>` : '');
+    if (fit) map.fitBounds(procLayer.getBounds(), { padding: [50, 50], maxZoom: 19 });
+    return true;
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a.proc'); if (!a) return;
+    e.preventDefault(); map.closePopup(); highlightProc(a.dataset.proc);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') clearProc(); });
 
   // ---------- labels ----------
   const labelLayer = L.layerGroup().addTo(map);
@@ -395,6 +463,7 @@
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
     $('langBtn').textContent = ui.lang === 'ru' ? 'HE' : 'RU';
     renderLegend(); renderStats(); renderStateInfo(); buildBaseControl();
+    if (procCurrent) highlightProc(procCurrent, false);
   }
 
   function renderLegend() {
@@ -460,6 +529,9 @@
   $('searchForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const q = $('searchInput').value.trim();
+    $('searchMsg').textContent = '';
+    const pm = q.replace(/\s+/g, '').match(/^((?:[A-Za-z]\/)?\d+)[/\\-](\d{4})$/);
+    if (pm && PROC.has(`${pm[1]}/${pm[2]}`)) { highlightProc(`${pm[1]}/${pm[2]}`); return; }
     const m = q.match(/^(\d+)\s*[/\\ ,.-]?\s*(\d+)?$/);
     $('searchMsg').textContent = '';
     if (!m) { $('searchMsg').textContent = t('notFound'); return; }
@@ -478,6 +550,8 @@
     const s = e.target.closest('[data-show]'); if (s) toggle(s.dataset.show);
   });
 
+  $('procClose').addEventListener('click', clearProc);
+  $('procFitBtn').addEventListener('click', () => { if (procLayer) map.fitBounds(procLayer.getBounds(), { padding: [50, 50], maxZoom: 19 }); });
   $('quickMode').addEventListener('change', () => { map.closePopup(); map.getContainer().style.cursor = $('quickMode').checked ? 'pointer' : ''; });
   $('planOnly').checked = ui.planOnly;
   $('planOnly').addEventListener('change', () => { ui.planOnly = $('planOnly').checked; saveUi(); restyle(); renderLabels(); });
